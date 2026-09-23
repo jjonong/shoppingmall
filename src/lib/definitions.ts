@@ -33,6 +33,26 @@ export type AuthFormState =
     }
   | undefined;
 
+// 한 상품을 장바구니에 담을 수 있는 최대 수량
+export const MAX_QUANTITY_PER_ITEM = 99;
+
+export const CheckoutSchema = z.object({
+  recipientName: z.string().trim().min(2, { error: "받는 분 이름을 2자 이상 입력해주세요." }).max(20, { error: "이름은 20자 이하로 입력해주세요." }),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^01[0-9]-?\d{3,4}-?\d{4}$/, { error: "휴대폰 번호 형식이 아닙니다. (예: 010-1234-5678)" }),
+  address: z.string().trim().min(5, { error: "배송지 주소를 입력해주세요." }).max(200, { error: "주소가 너무 깁니다." }),
+});
+
+export type CheckoutFormState =
+  | {
+      errors?: Partial<Record<"recipientName" | "phone" | "address", string[]>>;
+      message?: string;
+      values?: { recipientName?: string; phone?: string; address?: string };
+    }
+  | undefined;
+
 // 로그인 후 이동할 주소(?next=)가 우리 사이트 내부 경로인지 확인합니다.
 // "//evil.com" 같은 외부 주소로 보내는 오픈 리다이렉트 공격을 막기 위함입니다.
 export function safeRedirectPath(next: unknown, fallback = "/") {

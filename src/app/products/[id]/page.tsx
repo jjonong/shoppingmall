@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
+import AddToCartForm from "@/components/AddToCartForm";
 import { formatPrice } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 
@@ -52,14 +53,7 @@ export default async function ProductDetailPage({ params }: PageProps<"/products
 
         <p className="mt-6 leading-relaxed whitespace-pre-line text-gray-700">{product.description}</p>
 
-        {/* 장바구니 담기는 5단계에서 구현합니다 */}
-        <button
-          type="button"
-          disabled
-          className="mt-8 rounded-lg bg-black py-3.5 font-semibold text-white disabled:cursor-not-allowed disabled:bg-gray-300"
-        >
-          {soldOut ? "품절" : "장바구니 담기 (준비 중)"}
-        </button>
+        <AddToCartForm productId={product.id} stock={product.stock} />
       </div>
     </div>
   );

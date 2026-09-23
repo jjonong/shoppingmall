@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { requireUser } from "@/lib/dal";
 
 export const metadata: Metadata = { title: "마이페이지" };
@@ -23,7 +24,14 @@ export default async function MyPage() {
           <dd>{user.role === "ADMIN" ? "관리자" : "일반회원"}</dd>
         </div>
       </dl>
-      <p className="mt-6 text-sm text-gray-500">주문 내역은 5단계에서 추가됩니다.</p>
+      <div className="mt-6 grid grid-cols-2 gap-3">
+        <Link href="/orders" className="rounded-lg border border-gray-300 py-3 text-center hover:border-black">
+          주문 내역
+        </Link>
+        <Link href="/cart" className="rounded-lg border border-gray-300 py-3 text-center hover:border-black">
+          장바구니
+        </Link>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { logout } from "@/app/actions/auth";
 import { getCurrentUser } from "@/lib/dal";
+import { prisma } from "@/lib/prisma";
 
 // 로그인 상태에 따라 헤더 오른쪽 메뉴를 다르게 보여줍니다.
 export default async function UserMenu() {
@@ -19,6 +20,8 @@ export default async function UserMenu() {
     );
   }
 
+  const cartCount = await prisma.cartItem.count({ where: { userId: user.id } });
+
   return (
     <div className="flex items-center gap-3 text-sm whitespace-nowrap">
       {user.role === "ADMIN" && (
@@ -26,6 +29,15 @@ export default async function UserMenu() {
       )}
       <Link href="/mypage" className="hover:underline">
         {user.name}님
+      </Link>
+      <Link href="/orders" className="hidden hover:underline sm:inline">
+        주문내역
+      </Link>
+      <Link href="/cart" className="hover:underline">
+        장바구니
+        {cartCount > 0 && (
+          <span className="ml-1 rounded-full bg-black px-1.5 py-0.5 text-xs text-white">{cartCount}</span>
+        )}
       </Link>
       <form action={logout}>
         <button type="submit" className="text-gray-500 hover:text-black">
