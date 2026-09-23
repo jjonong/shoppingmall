@@ -1,0 +1,91 @@
+// Prisma 스키마: 쇼핑몰의 DB 테이블 구조를 정의합니다.
+// 변경 후에는 `npx prisma migrate dev --name <설명>` 으로 DB에 반영하세요.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  PAID // 결제완료 (1차 버전은 가상 결제)
+  SHIPPING // 배송중
+  DELIVERED // 배송완료
+  CANCELLED // 주문취소
+}
+
+model User {
+  id           Int        @id @default(autoincrement())
+  email        String     @unique
+  passwordHash String
+  name         String
+  role         Role       @default(USER)
+  createdAt    DateTime   @default(now())
+  cartItems    CartItem[]
+  orders       Order[]
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  slug     String    @unique // URL에 쓰는 영문 이름 (예: /products?category=top)
+  products Product[]
+}
+
+model Product {
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String
+  price       Int // 원 단위 정수 (소수점 오차 방지)
+  stock       Int         @default(0)
+  imageUrl    String
+  isActive    Boolean     @default(true) // false면 판매 중지 (주문 내역 보존을 위해 삭제 대신 사용)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  categoryId  Int
+  category    Category    @relation(fields: [categoryId], references: [id])
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+}
+
+model CartItem {
+  id        Int     @id @default(autoincrement())
+  quantity  Int
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId]) // 같은 상품은 한 줄로 합치고 수량만 늘림
+}
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  status        OrderStatus @default(PAID)
+  totalPrice    Int
+  recipientName String
+  phone         String
+  address       String
+  createdAt     DateTime    @default(now())
+  userId        Int
+  user          User        @relation(fields: [userId], references: [id])
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  quantity  Int
+  price     Int // 주문 당시 가격 (상품 가격이 바뀌어도 기록 유지)
+  orderId   Int
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+}

@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
+
+# local sqlite database
+*.db
+*.db-journal
+!.env.example
+
+# prisma init agent skills (local only)
+.claude/skills/
+skills-lock.json
