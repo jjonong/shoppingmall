@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import UserMenu from "./UserMenu";
 
 export default function Header() {
   return (
@@ -14,7 +16,7 @@ export default function Header() {
         </nav>
 
         {/* 검색: form의 GET 요청으로 /products?q=검색어 로 이동합니다 (JS 없이도 동작) */}
-        <form action="/products" className="ml-auto flex-1 sm:max-w-xs">
+        <form action="/products" className="ml-auto min-w-0 flex-1 sm:max-w-xs">
           <input
             name="q"
             type="search"
@@ -22,6 +24,11 @@ export default function Header() {
             className="w-full rounded-full border border-gray-300 px-4 py-1.5 text-sm outline-none focus:border-black"
           />
         </form>
+
+        {/* 로그인 정보를 읽는 동안에도 헤더의 나머지 부분은 먼저 보이도록 Suspense로 감쌉니다 */}
+        <Suspense fallback={<div className="w-24" />}>
+          <UserMenu />
+        </Suspense>
       </div>
     </header>
   );
