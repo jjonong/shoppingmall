@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { ALLOWED_IMAGE_HOSTS } from "@/lib/image-hosts";
 
 // 폼 입력값 검증 규칙. 서버에서 검증하므로 브라우저 검사를 우회해도 안전합니다.
 
@@ -50,6 +51,43 @@ export type CheckoutFormState =
       errors?: Partial<Record<"recipientName" | "phone" | "address", string[]>>;
       message?: string;
       values?: { recipientName?: string; phone?: string; address?: string };
+    }
+  | undefined;
+
+// 폼의 문자열 값을 정수로 변환합니다. 빈 칸은 0이 아니라 "입력해주세요" 에러가 되도록 합니다.
+function requiredInt(emptyMessage: string) {
+  return z.preprocess(
+    (v) => (typeof v === "string" && v.trim() !== "" ? Number(v) : undefined),
+    z.number({ error: emptyMessage }).int({ error: "정수로 입력해주세요." }),
+  );
+}
+
+// 관리자 상품 등록/수정 폼
+export const ProductSchema = z.object({
+  name: z.string().trim().min(1, { error: "상품명을 입력해주세요." }).max(100, { error: "상품명은 100자 이하로 입력해주세요." }),
+  description: z.string().trim().min(1, { error: "상품 설명을 입력해주세요." }).max(2000, { error: "설명은 2000자 이하로 입력해주세요." }),
+  price: requiredInt("가격을 숫자로 입력해주세요.").pipe(
+    z.number().min(0, { error: "0원 이상이어야 합니다." }).max(100_000_000, { error: "가격이 너무 큽니다." }),
+  ),
+  stock: requiredInt("재고를 숫자로 입력해주세요.").pipe(
+    z.number().min(0, { error: "0개 이상이어야 합니다." }).max(100_000, { error: "재고가 너무 많습니다." }),
+  ),
+  imageUrl: z
+    .url({ protocol: /^https$/, error: "https:// 로 시작하는 이미지 주소를 입력해주세요." })
+    .refine((u) => ALLOWED_IMAGE_HOSTS.includes(new URL(u).hostname), {
+      error: `허용된 이미지 사이트만 사용할 수 있습니다: ${ALLOWED_IMAGE_HOSTS.join(", ")}`,
+    }),
+  categoryId: requiredInt("카테고리를 선택해주세요.").pipe(z.number().positive({ error: "카테고리를 선택해주세요." })),
+  isActive: z.preprocess((v) => v === "on", z.boolean()), // 체크박스는 체크하면 "on", 아니면 값이 없음
+});
+
+export type ProductFormValues = { [K in keyof z.infer<typeof ProductSchema>]?: string };
+
+export type ProductFormState =
+  | {
+      errors?: Partial<Record<keyof z.infer<typeof ProductSchema>, string[]>>;
+      message?: string;
+      values?: ProductFormValues;
     }
   | undefined;
 

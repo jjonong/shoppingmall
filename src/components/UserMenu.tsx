@@ -25,7 +25,9 @@ export default async function UserMenu() {
   return (
     <div className="flex items-center gap-3 text-sm whitespace-nowrap">
       {user.role === "ADMIN" && (
-        <span className="rounded bg-black px-1.5 py-0.5 text-xs text-white">관리자</span>
+        <Link href="/admin" className="rounded bg-black px-1.5 py-0.5 text-xs text-white hover:bg-gray-700">
+          관리자
+        </Link>
       )}
       <Link href="/mypage" className="hover:underline">
         {user.name}님

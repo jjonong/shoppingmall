@@ -58,7 +58,8 @@ export async function login(_prev: AuthFormState, formData: FormData): Promise<A
   }
 
   await createSession({ userId: user.id, role: user.role });
-  redirect(safeRedirectPath(formData.get("next")));
+  const fallback = user.role === "ADMIN" ? "/admin" : "/";
+  redirect(safeRedirectPath(formData.get("next"), fallback));
 }
 
 export async function logout() {

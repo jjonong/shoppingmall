@@ -7,3 +7,11 @@ export const ORDER_STATUS: Record<OrderStatus, { label: string; className: strin
   DELIVERED: { label: "배송완료", className: "bg-green-50 text-green-700" },
   CANCELLED: { label: "주문취소", className: "bg-gray-100 text-gray-500" },
 };
+
+// 관리자가 바꿀 수 있는 다음 상태. 배송완료/주문취소는 최종 상태라 더 바꿀 수 없습니다.
+export const NEXT_STATUSES: Record<OrderStatus, OrderStatus[]> = {
+  PAID: ["SHIPPING", "CANCELLED"],
+  SHIPPING: ["DELIVERED"],
+  DELIVERED: [],
+  CANCELLED: [],
+};

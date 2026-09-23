@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import * as z from "zod";
 import { requireUser } from "@/lib/dal";
 import { CheckoutSchema, type CheckoutFormState } from "@/lib/definitions";
+import { cancelPaidOrder } from "@/lib/orders";
 import { prisma } from "@/lib/prisma";
 
 // 트랜잭션 안에서 "사용자에게 보여줄 에러"를 구분하기 위한 클래스
@@ -76,23 +77,8 @@ export async function cancelOrder(formData: FormData) {
   const orderId = Number(formData.get("orderId"));
   if (!Number.isInteger(orderId) || orderId <= 0) return;
 
-  await prisma.$transaction(async (tx) => {
-    // 본인 주문이고 아직 '결제완료' 상태일 때만 취소 가능 (배송 시작 후에는 불가)
-    const { count } = await tx.order.updateMany({
-      where: { id: orderId, userId: user.id, status: "PAID" },
-      data: { status: "CANCELLED" },
-    });
-    if (count === 0) return;
-
-    // 취소된 수량만큼 재고를 되돌립니다.
-    const items = await tx.orderItem.findMany({ where: { orderId } });
-    for (const item of items) {
-      await tx.product.update({
-        where: { id: item.productId },
-        data: { stock: { increment: item.quantity } },
-      });
-    }
-  });
+  // 본인 주문이고 아직 '결제완료' 상태일 때만 취소 가능 (배송 시작 후에는 불가)
+  await prisma.$transaction((tx) => cancelPaidOrder(tx, { id: orderId, userId: user.id }));
 
   refresh();
 }
