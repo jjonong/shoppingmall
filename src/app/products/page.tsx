@@ -28,7 +28,7 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
 
   const where: Prisma.ProductWhereInput = {
     isActive: true,
-    ...(q && { name: { contains: q } }),
+    ...(q && { name: { contains: q, mode: "insensitive" } }), // 영문 대소문자 구분 없이 검색
     ...(category && { category: { slug: category } }),
   };
 
